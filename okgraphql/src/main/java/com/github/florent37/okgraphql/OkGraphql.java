@@ -22,6 +22,8 @@ public class OkGraphql {
 
     private OkHttpClient okHttpClient = new OkHttpClient();
     private Converter converter = new GsonConverter();
+    private String acceptHeader = "application/json";
+    private String contentTypeHeader = "application/json";
     private Cache cache;
 
     public Query<String> query(String query) {
@@ -43,15 +45,13 @@ public class OkGraphql {
 
     protected <T> void enqueue(final AbstractQuery abstractQuery) {
         try {
-            okHttpClient.newCall(
-                    new Request.Builder()
-                            .url(baseUrl)
-                            .addHeader("accept", "application/json")
-                            .addHeader("content-type", "application/json")
-                            .post(
-                                    RequestBody.create(MediaType.parse("application/json"), abstractQuery.getContent())
-                            )
-                            .build())
+            Request.Builder builder = new Request.Builder()
+                    .url(baseUrl)
+                    .addHeader("accept", acceptHeader)
+                    .addHeader("content-type", contentTypeHeader)
+                    .post(RequestBody.create(MediaType.parse(contentTypeHeader), abstractQuery.getContent()));
+
+            okHttpClient.newCall(builder.build())
                     .enqueue(new okhttp3.Callback() {
                         @Override
                         public void onResponse(Call call, Response response) throws IOException {
@@ -99,6 +99,26 @@ public class OkGraphql {
 
         public Builder baseUrl(String baseUrl) {
             okGraphql.baseUrl = baseUrl;
+            return this;
+        }
+
+        /**
+         * Sets the Accept: header for all requests. Default is "application/json"
+         * @param header Accept header, which defines data type for app to receive
+         * @return Builder for chaining
+         */
+        public Builder acceptHeader(String header) {
+            okGraphql.acceptHeader = header;
+            return this;
+        }
+
+        /**
+         * Sets the Content-Type: header for all requests. Default is "application/json"
+         * @param header Content-Type header, which defines data type which app sends.
+         * @return Builder for chaining
+         */
+        public Builder contentTypeHeader(String header) {
+            okGraphql.contentTypeHeader = header;
             return this;
         }
     }

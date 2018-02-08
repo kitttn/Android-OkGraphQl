@@ -1,1 +1,1 @@
-include ':app', ':okgraphql'
+include ':okgraphql'
